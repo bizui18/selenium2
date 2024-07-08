@@ -37,56 +37,35 @@ public class Jobcan {
 
 	public static void main(String[] args) throws Exception {
 
-		System.out.println("=================================================================");
-		System.out.println("Job Started!!!     " + ZonedDateTime.now().toString());
+		String properiesPath = "d:/dot.properties";
+        ZonedDateTime now = ZonedDateTime.now();
+        
+        System.out.println("=================================================================");
+        System.out.println("Job Started!!!     "+now.toString());
+        
+        String today = now.format(DateTimeFormatter.ofPattern("MMdd"));
+        Map<String, String> map = MyUtils.loadProperties(properiesPath);
+        
+        String[] holidays = map.getOrDefault("holiday","").replaceAll(" ", "").split(","); // 공백 제거 후 쪼갬
 
-		Map<String, String> map = MyUtils.loadProperties("d:/jobcan.properties");
+		WebDriverManager manager = new WebDriverManager();
+		manager.setChromePath();
 		
-		String rM = map.get("restMonth"); 
-		String rD = map.get("restDay");
-		String[] dayList = rD.split(",");
-		System.out.println("rest M D : " + rM + " / " + Arrays.toString(dayList));
+		// manager.downloadDriver("d:/chromedriver/");
+		manager.downloadDriver();
 		
-		LocalDate now = LocalDate.now();
-		int month = now.getMonthValue();
-		int day = now.getDayOfMonth();
-		System.out.println("Today : " + month + " / " + day);
+		System.setProperty("webdriver.chrome.driver", String.format("%s%s", manager.getChromeDriverPath(), "/chromedriver.exe"));
 		
-		boolean checkDay = true;
-		for (String restDay : dayList) {
-			System.out.println("M : " + rM +" / "+ Integer.toString(month));
-			System.out.println("D : " + restDay + " / " + Integer.toString(day));
-			
-			if(rM.equals(Integer.toString(month)) && restDay.equals(Integer.toString(day))) {
-				checkDay = false;
-			}else {
-			}
-		}
+		Jobcan jobcan = new Jobcan(MyUtils.getWebDriver(false));
 		
-		System.out.println("checkDay : " + checkDay);
-		checkDay = false;
-		if(checkDay) {
-			// System.out.printf("id : %s pw : %s \n",args[0],args[1]);
-			WebDriverManager manager = new WebDriverManager();
-			manager.setChromePath();
-			
-			// manager.downloadDriver("d:/chromedriver/");
-			manager.downloadDriver();
-			
-			System.setProperty("webdriver.chrome.driver",
-					String.format("%s%s", manager.getChromeDriverPath(), "/chromedriver.exe"));
-			
-			Jobcan jobcan = new Jobcan(MyUtils.getWebDriver(false));
-			
-			// random timer
-			Random random = new Random();
-			
-			int sleep = random.nextInt(10) + 1 * 1000;
-			System.out.println(sleep);
-			MyUtils.sleep(sleep);
-			
-			jobcan.excute();
-		}
+		// random timer
+		Random random = new Random();
+		
+		int sleep = random.nextInt(10) + 1 * 1000;
+		System.out.println(sleep);
+		MyUtils.sleep(sleep);
+		
+		jobcan.excute();
 		System.out.println("=================================================================\n");
 	}
 
