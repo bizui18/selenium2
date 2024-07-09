@@ -84,7 +84,7 @@ public class WebDriverManager {
         String version = getChromeVersion().substring(0, 3);
 
         String path = MyUtils.fileDownload(urlMap.get(version), dir);
-        System.out.println(path);
+        System.out.println("chrome driver save path ==>\t"+dir + path);
         
         new File(path).mkdirs();
 
@@ -92,7 +92,17 @@ public class WebDriverManager {
         Files.deleteIfExists(Path.of(dir,path));
         mvFromDir(dir);
         System.setProperty("webdriver.chrome.driver",String.format("%s%s", dir,"/chromedriver.exe"));
-
+        
+    }
+    public void deleteRecursive(File root) throws IOException{
+        for (File file : root.listFiles(t-> t.isFile())) {
+            Files.deleteIfExists(file.toPath());
+        }
+        File[] list = root.listFiles(t ->t.isDirectory()) ;
+        for (File dir : list) {
+            deleteRecursive(dir);
+        }
+        Files.deleteIfExists(root.toPath());
     }
 
     public void downloadDriver() throws Exception{
@@ -132,7 +142,13 @@ public class WebDriverManager {
             }
         });
         list.forEach(t -> {
-            t.deleteOnExit();
+            // t.deleteOnExit(); 즉시 삭제가 아닌것 같다.
+            try {
+                Files.deleteIfExists(t.toPath()); // 즉시 삭제
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         });
         
     }

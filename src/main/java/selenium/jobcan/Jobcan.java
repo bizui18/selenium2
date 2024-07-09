@@ -1,5 +1,7 @@
 package selenium.jobcan;
 
+import java.io.File;
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,18 +33,28 @@ public class Jobcan {
 	
 	public static void main(String[] args) throws Exception {
 
-		String properiesPath = "d:/dot.properties";
+		// 1. properties loading and check date
+		// String properiesPath = "d:/dot.properties";
+		String properiesPath = args[0];
 		
         ZonedDateTime now = ZonedDateTime.now();
         System.out.println("=================================================================");
-        System.out.println("Job Started!!!     "+now.toString());
+        System.out.println("Job Started!!!\n"+now.getDayOfWeek().toString() +"\t"+ now.toString());
         
         Map<String, String> map = MyUtils.loadProperties(properiesPath);
-        
+
         String[] holidays = MyProperties.HOLIDAY.getValue(map).replaceAll(" ", "").split(","); // 공백 제거 후 쪼갬
 		boolean show = MyProperties.SHOW.getBooleanValue(map);
 		boolean sleepYN = MyProperties.SLEEP.getBooleanValue(map);
         String today = now.format(DateTimeFormatter.ofPattern("MMdd"));
+		int dayOfWeek = now.getDayOfWeek().getValue();
+		
+		// check day of week which is Saturday or Sunday
+		if(dayOfWeek == DayOfWeek.SATURDAY.getValue() || dayOfWeek == DayOfWeek.SUNDAY.getValue()){
+			System.out.println("\t\t\tit is " + DayOfWeek.of(dayOfWeek).toString());
+			return;
+		}
+		// check holiday which written in properties file.
 		for (String holiday : holidays) {
 			if(today.equals(holiday)){
 				System.out.println("\t\t\tit is happy holiday!!!");
@@ -50,13 +62,14 @@ public class Jobcan {
 			}
 		}
 
+		//2. chrome setting
 		WebDriverManager manager = new WebDriverManager();
 		manager.setChromePath();
 		manager.downloadDriver();
-				
+		
 		Jobcan jobcan = new Jobcan(MyUtils.getWebDriver(show),map);
 		
-		// random timer		
+		//3. random timer		
 		if(sleepYN){
 			Random random = new Random();
 			int sleep = (random.nextInt(300) + 1) * 1000;
@@ -64,7 +77,12 @@ public class Jobcan {
 			MyUtils.sleep(sleep);
 		}
 		
+		//4. web page works
 		jobcan.excute();
+		if(MyProperties.QUIT.getBooleanValue(map)){
+			System.out.println("delete chromedriver folder and files");
+			manager.deleteRecursive(new File(manager.getChromeDriverPath()));
+		}
 		System.out.println("=================================================================\n");
 	}
 
@@ -101,6 +119,7 @@ public class Jobcan {
 
 		if(quit){
 			driver.quit();
+
 		}
 	}
 

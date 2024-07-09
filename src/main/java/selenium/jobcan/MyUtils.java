@@ -111,7 +111,7 @@ public class MyUtils {
 
                 // System.out.println("Content-Type = " + contentType);
                 // System.out.println("Content-Disposition = " + disposition);
-                System.out.println("fileName = " + fileName);
+               //  System.out.println("fileName = " + fileName);
             File saveDir = new File(outputDir);
             if(!saveDir.exists()){
                saveDir.mkdirs();
