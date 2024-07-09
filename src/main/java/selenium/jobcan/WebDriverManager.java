@@ -22,14 +22,15 @@ public class WebDriverManager {
     private String jsonUrl;
     private String defaultChromeDriverDir;
     private String chromeDriverPath;
+    
     // 초기화...
     public WebDriverManager(){
         jsonUrl = "https://github.com/GoogleChromeLabs/chrome-for-testing/blob/main/data/latest-versions-per-milestone-with-downloads.json";
-        
         defaultChromeDriverDir = String.format("d:/chromeDriver/%s/", ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddhhmmss")));
     }
 
     private String getChromeVersion(){
+
         String chromePath =System.getProperty("chrome.path");
         if(chromePath == null){
             setChromePath();
@@ -90,6 +91,8 @@ public class WebDriverManager {
         MyUtils.unCompressZip(dir,path);
         Files.deleteIfExists(Path.of(dir,path));
         mvFromDir(dir);
+        System.setProperty("webdriver.chrome.driver",String.format("%s%s", dir,"/chromedriver.exe"));
+
     }
 
     public void downloadDriver() throws Exception{

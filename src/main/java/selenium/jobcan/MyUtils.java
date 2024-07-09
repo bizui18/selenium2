@@ -56,20 +56,13 @@ public class MyUtils {
 
       return new ChromeDriver(options);
    }
-   public static WebDriver getWebDriver(boolean bool){ // true 
-      if(bool){
-         System.setProperty("webdriver.chrome.driver", "/root/cron/chromedriver");
-      }else{
-         if(System.getProperty("webdriver.chrome.driver") == null){
-            System.setProperty("webdriver.chrome.driver", "D:/chromedriver-win64/chromedriver.exe");
-         }
-      }
-      
+   public static WebDriver getWebDriver(boolean show){ // true 
+
       ChromeOptions options = new ChromeOptions();
       options.setCapability("acceptInsecureCerts", true);
       options.addArguments("--start-maximized");
       
-      if(bool){
+      if(!show){
          options.addArguments("enable-automation"); // https://stackoverflow.com/a/43840128/1689770
          options.addArguments("--headless"); // only if you are ACTUALLY running headless
          options.addArguments("--no-sandbox"); //https://stackoverflow.com/a/50725918/1689770
