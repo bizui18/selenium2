@@ -71,7 +71,6 @@ public class MyUtils {
          options.addArguments("--disable-gpu"); //https://stackoverflow.com/questions/51959986/how-to-solve-selenium-chromedriver-timed-out-receiving-message-from-renderer-exc
       }
       
-
       ChromeDriver driver = null;
       try {
          driver = new ChromeDriver(options);
@@ -82,8 +81,8 @@ public class MyUtils {
       return driver;
    }
    public static String fileDownload(String spec,String outputDir){
-        InputStream is = null;
-        FileOutputStream os = null;
+      InputStream is = null;
+      FileOutputStream os = null;
       String fileName = "";
         try{
             URL url = new URL(spec);
@@ -148,6 +147,7 @@ public class MyUtils {
         }
       return fileName;
    }
+   
    public static String fileDownload(String spec){
         String outputDir = "D:/temp";
         return fileDownload(spec, outputDir);
@@ -264,7 +264,7 @@ public class MyUtils {
      ZipEntry zipEntry = null;
      while((zipEntry = zipInputStream.getNextEntry()) != null){
          int length = 0;
-       File save = new File(filepath+zipEntry.getName());
+       File save = new File(filepath,zipEntry.getName());
        if(!save.getParentFile().exists()) save.getParentFile().mkdirs();
          BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(save));
          while((length = zipInputStream.read()) != -1){

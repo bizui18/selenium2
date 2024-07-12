@@ -1,23 +1,24 @@
 package selenium.jobcan;
 
-import java.io.File;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import selenium.enums.MyProperties;
+import selenium.enums.OS;
 
 public class Jobcan {
+	
 	WebDriver driver;
 	JavascriptExecutor js;
 	WebDriverWait waiter;
@@ -34,8 +35,8 @@ public class Jobcan {
 	public static void main(String[] args) throws Exception {
 
 		// 1. properties loading and check date
-		// String properiesPath = "d:/dot.properties";
-		String properiesPath = args[0];
+		String properiesPath = "d:/dot.properties";
+		// String properiesPath = args[0];
 		
         ZonedDateTime now = ZonedDateTime.now();
         System.out.println("=================================================================");
@@ -62,11 +63,9 @@ public class Jobcan {
 			}
 		}
 
-		//2. chrome setting
-		WebDriverManager manager = new WebDriverManager();
-		manager.setChromePath();
-		manager.downloadDriver();
-		
+		if(!OS.get().equals(OS.Window))show = false;
+		System.setProperty("webdriver.chrome.driver", map.get("driver"));
+
 		Jobcan jobcan = new Jobcan(MyUtils.getWebDriver(show),map);
 		
 		//3. random timer		
@@ -79,11 +78,124 @@ public class Jobcan {
 		
 		//4. web page works
 		jobcan.excute();
-		if(MyProperties.QUIT.getBooleanValue(map)){
-			System.out.println("delete chromedriver folder and files");
-			manager.deleteRecursive(new File(manager.getChromeDriverPath()));
-		}
 		System.out.println("=================================================================\n");
+	}
+	public List<String> openWindows(){
+		WebElement sslButton = driver.findElement(By.cssSelector("#jbc-app-links > ul > li:nth-child(3) > a"));
+		sslButton.click();		
+		
+		for (String wind : driver.getWindowHandles()) {
+			if(driver.getWindowHandle().equals(wind))continue;
+			driver.switchTo().window(wind);
+			js.executeScript("window.open('/employee/attendance')");
+			// js.executeScript("window.open('/employee/adit/modify')");
+			MyUtils.sleep(3000);
+		}
+		List<String> windows = new ArrayList<>();
+		
+		// 0 main , 1 employee, 2 list 3. adit page
+		for (String wind : driver.getWindowHandles()) {
+			windows.add(wind);
+		}
+
+		driver.switchTo().window(windows.get(2));
+		waiter
+		.ignoring(NoSuchElementException.class)
+		.withTimeout(Duration.ofSeconds(30))
+		.pollingEvery(Duration.ofSeconds(3))
+		.until(t -> {
+			return t.findElement(By.cssSelector("#search-result")) !=null;
+		});
+		
+		// driver.switchTo().window(windows.get(3));
+		// waiter
+		// .ignoring(NoSuchElementException.class)
+		// .withTimeout(Duration.ofSeconds(10))
+		// .pollingEvery(Duration.ofSeconds(1))
+		// .until(t -> {
+		// 	return t.findElement(By.cssSelector("#logs-table > div > table > tbody > tr")) !=null;
+		// });
+		
+		driver.switchTo().window(windows.get(0));
+		return windows;
+	}
+
+	public boolean aditCheck(WebDriver page){
+		boolean flag = false;
+		String nowStr = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("HHmm"));
+		int now = Integer.parseInt(nowStr);
+		List<WebElement> list = page.findElements(By.cssSelector("#logs-table > div > table > tbody > tr"));
+		
+		boolean on = false;
+		list.forEach(t -> {
+			System.out.println(t.findElement(By.cssSelector("td:nth-child(1)")).getText());
+		});
+		if(now <=1000 && list.size() == 0 ){
+			// 출근 가능
+		}else if(1700 <= now){
+			// 출근 표시가 있고 퇴근 표시가 없어야 한다.
+		}else{
+
+		}
+
+		return flag;
+	}
+	public boolean attendanceCheck(WebDriver page){
+		WebElement el = page.findElement(By.cssSelector(String.format("#search-result > div.table-responsive.text-nowrap > table > tbody > tr:nth-child(%d)", ZonedDateTime.now().getDayOfMonth())));
+		//0 날짜 MM/dd(DoW)
+		//1 휴일구분 
+		//2 근무스케줄시간 hh:mm~hh:mm
+		//3 출근시각 hh:mm
+		//4 퇴근시각 
+		List<WebElement> list = el.findElements(By.cssSelector("td"));
+		String scheduled_onoff = list.get(2).getText().replaceAll("[^0-9]", "");
+		String real_on = list.get(3).getText().replaceAll("[^0-9]", "");
+		String real_off = list.get(4).getText().replaceAll("[^0-9]", "");
+
+		String nowStr = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("HHmm"));
+		String onStr = scheduled_onoff.substring(0, 4);
+		String offStr = scheduled_onoff.substring(4);
+		
+		int now = Integer.parseInt(nowStr);
+		int on = Integer.parseInt(onStr);
+		int off = Integer.parseInt(offStr);
+
+		System.out.println(el.getText());
+		System.out.println("time now : "+now);
+
+		boolean flag = false;
+		if(now <=1000 && now <= on &&"".equals(real_on)){
+			// 출근 가능
+			System.out.println("now it's time to work");
+			flag = true;
+		}else if(1700<=now && off <= now && !"".equals(real_on) && "".equals(real_off)){
+			// 퇴근 가능
+			System.out.println("now you are free to go home");
+			flag = true;
+		}else{
+			// 출퇴근 가능 시간이 아님
+			System.out.println("cannot check both get_on and get_off");
+		}
+		return flag;
+
+
+		
+	}
+	public void buttonClick(WebDriver page){
+		boolean click = MyProperties.CLICK.getBooleanValue(properties);
+		String time = page.findElement(By.cssSelector("#clock")).getText();
+			int i = 0;
+			while ("00:00:00".equals(time) && i++ < 3) {
+				time = page.findElement(By.cssSelector("#clock")).getText();
+				MyUtils.sleep(1000);
+			}
+			System.out.println(time);
+			WebElement registerBtn = page.findElement(By.cssSelector("#adit-button-push"));
+			
+			if(click){
+				registerBtn.click();
+				System.out.println(registerBtn.getText() + "clicked !!!");
+			}
 	}
 
 	public void excute() {
@@ -91,35 +203,23 @@ public class Jobcan {
 		driver.manage().window().maximize();
 		login(driver);
 		
-		boolean click = MyProperties.CLICK.getBooleanValue(properties);
-		boolean quit = MyProperties.QUIT.getBooleanValue(properties);
-		// 체크인/아웃 페이지 이동
-		driver.findElement(By.cssSelector("#jbc-app-links > ul > li:nth-child(3) > a")).click();
 
-		String mainWindow = driver.getWindowHandle();
-		for (String window : driver.getWindowHandles()) {
-			if (mainWindow.equals(window))
-				continue;
-			driver.switchTo().window(window);
-			MyUtils.sleep(3000);
-			String time = driver.findElement(By.cssSelector("#clock")).getText();
-			int i = 0;
-			while ("00:00:00".equals(time) && i++ < 3) {
-				time = driver.findElement(By.cssSelector("#clock")).getText();
-				MyUtils.sleep(1000);
-			}
-			System.out.println(time);
-			WebElement registerBtn = driver.findElement(By.cssSelector("#adit-button-push"));
-			
-			if(click){
-				registerBtn.click();
-				System.out.println(registerBtn.getText() + "clicked !!!");
-			}
+		// 사용자 사번 U00000
+		WebElement workerNumber = driver.findElement(By.cssSelector("body > div.wrapper > div > section.content > div > div > div:nth-child(1) > div.box-body > table > tbody > tr:nth-child(3) >td"));
+		System.out.println("uracle id => "+workerNumber.getText());
+		
+		// 0 main, 1 employee, 2 attendance
+		List<String> windows = openWindows();
+		
+		boolean okay = attendanceCheck(driver.switchTo().window(windows.get(2)));
+		
+		if(okay){
+			buttonClick(driver.switchTo().window(windows.get(1)));
 		}
-
+		
+		boolean quit = MyProperties.QUIT.getBooleanValue(properties);
 		if(quit){
 			driver.quit();
-
 		}
 	}
 
