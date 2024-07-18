@@ -29,6 +29,9 @@ import javax.imageio.ImageIO;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.manager.SeleniumManager;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
 
 public class MyUtils {
    
@@ -57,7 +60,7 @@ public class MyUtils {
       return new ChromeDriver(options);
    }
    public static WebDriver getWebDriver(boolean show){ // true 
-
+      
       ChromeOptions options = new ChromeOptions();
       options.setCapability("acceptInsecureCerts", true);
       options.addArguments("--start-maximized");
@@ -275,5 +278,31 @@ public class MyUtils {
          zipInputStream.closeEntry();
        }
       zipInputStream.close();
+   }
+
+   public static String color(String str,int color){
+		if(!(0 <= color && color <=255)){
+			color = 0;
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("\033[38;5;").append(color).append("m")
+			.append(str)
+			.append("\033[0m")
+		;
+		
+		return sb.toString();
+	}
+   public static void colorCodeList(){
+      int last = 256;
+      StringBuilder sb = new StringBuilder();
+      for (int i = 0; i < last; i++) {
+         sb.append(i).append(" : ");
+         sb.append(color("code", i)).append("\n");
+      }
+      System.out.println(sb.toString());
+   }
+   public static void main(String[] args) {
+      colorCodeList();
    }
 }

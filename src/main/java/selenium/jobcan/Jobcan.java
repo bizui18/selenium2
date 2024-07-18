@@ -5,17 +5,21 @@ import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import io.github.bonigarcia.wdm.WebDriverManager;
 import selenium.enums.MyProperties;
-import selenium.enums.OS;
 
 public class Jobcan {
 	
@@ -35,8 +39,8 @@ public class Jobcan {
 	public static void main(String[] args) throws Exception {
 
 		// 1. properties loading and check date
-		String properiesPath = "d:/dot.properties";
-		// String properiesPath = args[0];
+		// String properiesPath = "d:/dot.properties";
+		String properiesPath = args[0];
 		
         ZonedDateTime now = ZonedDateTime.now();
         System.out.println("=================================================================");
@@ -62,16 +66,17 @@ public class Jobcan {
 				return;
 			}
 		}
-
-		if(!OS.get().equals(OS.Window))show = false;
-		System.setProperty("webdriver.chrome.driver", map.get("driver"));
+		// WebDriverManager.chromiumdriver().setup();
+		// WebDriverManager.chromiumdriver().arm64().setup();
+		// WebDriver wd = WebDriverManager.chromiumdriver().create();
+		// System.setProperty("webdriver.chrome.driver", map.get("driver"));
 
 		Jobcan jobcan = new Jobcan(MyUtils.getWebDriver(show),map);
 		
 		//3. random timer		
 		if(sleepYN){
 			Random random = new Random();
-			int sleep = (random.nextInt(300) + 1) * 1000;
+			int sleep = (random.nextInt(120) + 1) * 1000;
 			System.out.println("sleep time : "+sleep);
 			MyUtils.sleep(sleep);
 		}
@@ -119,7 +124,7 @@ public class Jobcan {
 		driver.switchTo().window(windows.get(0));
 		return windows;
 	}
-
+	//Deprecated
 	public boolean aditCheck(WebDriver page){
 		boolean flag = false;
 		String nowStr = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("HHmm"));
