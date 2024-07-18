@@ -10,7 +10,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -20,11 +19,10 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import selenium.enums.MyProperties;
 
 public class Jobcan {
@@ -248,7 +246,7 @@ public class Jobcan {
 	
 	public void telegramSendMessage(String text) {
 		String Token = "7442441397:AAFRcc2dDYvAS96Cpync4tKNWVBqIA_0VUI";
-		String chat_id = "1725280220";
+		String chat_id = "-1002151638491";
 		
 		BufferedReader in = null;
 		
