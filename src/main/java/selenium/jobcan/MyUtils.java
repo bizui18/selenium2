@@ -166,13 +166,15 @@ public class MyUtils {
       Map<String,String> propertiesMap = new HashMap<>();
 
       System.out.println();
-      System.out.println("\t\tchecking your properties file\n");
+      System.out.println("\t\t[ Checking your properties file ]");
       for (Object ob : properties.keySet()) {
          System.out.println("\t\t" + ob + " : \t "
                + new String(properties.getProperty(ob.toString()).getBytes("ISO-8859-1"), "utf-8"));
          propertiesMap.put((String) ob,
                new String(properties.getProperty(ob.toString()).getBytes("ISO-8859-1"), "utf-8"));
       }
+      System.out.println();
+      
       return propertiesMap;
    }
    private String convertEncoding(String iso) {
