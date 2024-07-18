@@ -1,11 +1,19 @@
 package selenium.jobcan;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -14,8 +22,9 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import selenium.enums.MyProperties;
-import selenium.enums.OS;
 
 public class Jobcan {
 	
@@ -35,12 +44,12 @@ public class Jobcan {
 	public static void main(String[] args) throws Exception {
 
 		// 1. properties loading and check date
-		String properiesPath = "d:/dot.properties";
-		// String properiesPath = args[0];
+		//String properiesPath = "d:/jobcan.properties";
+		String properiesPath = args[0];
 		
         ZonedDateTime now = ZonedDateTime.now();
         System.out.println("=================================================================");
-        System.out.println("Job Started!!!\n"+now.getDayOfWeek().toString() +"\t"+ now.toString());
+        System.out.println(now.getDayOfWeek().toString() + "\tJob Started!!!\n\n" + "\t\t"+ now.toString());
         
         Map<String, String> map = MyUtils.loadProperties(properiesPath);
 
@@ -52,18 +61,17 @@ public class Jobcan {
 		
 		// check day of week which is Saturday or Sunday
 		if(dayOfWeek == DayOfWeek.SATURDAY.getValue() || dayOfWeek == DayOfWeek.SUNDAY.getValue()){
-			System.out.println("\t\t\tit is " + DayOfWeek.of(dayOfWeek).toString());
+			System.out.println("\t\t\t[It is " + DayOfWeek.of(dayOfWeek).toString()+"]");
 			return;
 		}
 		// check holiday which written in properties file.
 		for (String holiday : holidays) {
 			if(today.equals(holiday)){
-				System.out.println("\t\t\tit is happy holiday!!!");
+				System.out.println("\t\t\t[It is happy holiday!!!]");
 				return;
 			}
 		}
 
-		if(!OS.get().equals(OS.Window))show = false;
 		System.setProperty("webdriver.chrome.driver", map.get("driver"));
 
 		Jobcan jobcan = new Jobcan(MyUtils.getWebDriver(show),map);
@@ -160,8 +168,8 @@ public class Jobcan {
 		int on = Integer.parseInt(onStr);
 		int off = Integer.parseInt(offStr);
 
-		System.out.println(el.getText());
-		System.out.println("time now : "+now);
+		System.out.println("\n" + el.getText());
+		System.out.println("time now : " + now);
 
 		boolean flag = false;
 		if(now <=1000 && now <= on &&"".equals(real_on)){
@@ -181,7 +189,7 @@ public class Jobcan {
 
 		
 	}
-	public void buttonClick(WebDriver page){
+	public void buttonClick(WebDriver page, String id){
 		boolean click = MyProperties.CLICK.getBooleanValue(properties);
 		String time = page.findElement(By.cssSelector("#clock")).getText();
 			int i = 0;
@@ -195,6 +203,7 @@ public class Jobcan {
 			if(click){
 				registerBtn.click();
 				System.out.println(registerBtn.getText() + "clicked !!!");
+				telegramSendMessage("[" + id + "] jobcan clicked : " + time );
 			}
 	}
 
@@ -203,10 +212,11 @@ public class Jobcan {
 		driver.manage().window().maximize();
 		login(driver);
 		
-
 		// 사용자 사번 U00000
 		WebElement workerNumber = driver.findElement(By.cssSelector("body > div.wrapper > div > section.content > div > div > div:nth-child(1) > div.box-body > table > tbody > tr:nth-child(3) >td"));
-		System.out.println("uracle id => "+workerNumber.getText());
+		
+		String id = workerNumber.getText();
+		System.out.println("uracle id => "+ id);
 		
 		// 0 main, 1 employee, 2 attendance
 		List<String> windows = openWindows();
@@ -214,7 +224,7 @@ public class Jobcan {
 		boolean okay = attendanceCheck(driver.switchTo().window(windows.get(2)));
 		
 		if(okay){
-			buttonClick(driver.switchTo().window(windows.get(1)));
+			buttonClick(driver.switchTo().window(windows.get(1)), id);
 		}
 		
 		boolean quit = MyProperties.QUIT.getBooleanValue(properties);
@@ -229,6 +239,36 @@ public class Jobcan {
 		driver.findElement(By.cssSelector("#user_password")).sendKeys(MyProperties.PW.getValue(properties));
 		driver.findElement(By.cssSelector("#login_button")).click();
 		MyUtils.sleep(500);
+	}
+	
+	public void telegramSendMessage(String text) {
+		String Token = "7442441397:AAFRcc2dDYvAS96Cpync4tKNWVBqIA_0VUI";
+		String chat_id = "1725280220";
+		
+		BufferedReader in = null;
+		
+		 try {
+			 URL obj = new URL("https://api.telegram.org/bot" + Token + "/sendmessage?chat_id=" + chat_id + "&text=" + text); // 호출할 url
+			 
+			 HttpURLConnection con = (HttpURLConnection)obj.openConnection();
+			 con.setRequestMethod("GET");
+			 in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
+			 
+			 String line = "";
+			 StringBuilder sb = new StringBuilder();
+			 while((line = in.readLine()) != null) { // response를 차례대로 출력
+				 sb.append(line);
+			 }
+			 String rst = sb.toString();
+			 ObjectMapper mapper = new ObjectMapper();
+			 Map<String, Object> map = mapper.readValue(rst, Map.class);
+			 System.out.println("Telegram Message : " + ((Map<String,Object>) map.get("result")).get("text"));
+			 
+		 } catch(Exception e) {
+			 e.printStackTrace();
+		 } finally {
+			 if(in != null) try { in.close(); } catch(Exception e) { e.printStackTrace(); }
+		 }
 	}
 
 }
