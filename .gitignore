@@ -1,5 +1,5 @@
 
-target/classes
+target/classes/selenium/jobcan/*.class
 *.prefs
 *.class
 *.jar
