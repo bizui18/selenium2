@@ -45,7 +45,7 @@ public class Jobcan {
 	public static void main(String[] args) throws Exception {
 
 		// 1. properties loading and check date
-		// String properiesPath = "d:/dot.properties";
+		// String properiesPath = "d:/jobcan.properties";
 		String properiesPath = args[0];
 		
         ZonedDateTime now = ZonedDateTime.now();
@@ -213,6 +213,7 @@ public class Jobcan {
 	}
 
 	public void excute() {
+		// telegramSendMessage("test");
 		driver.get(MyProperties.URL.getValue(properties));
 		driver.manage().window().maximize();
 		login(driver);
@@ -247,8 +248,9 @@ public class Jobcan {
 	}
 	
 	public void telegramSendMessage(String text) {
-		String Token = "7442441397:AAFRcc2dDYvAS96Cpync4tKNWVBqIA_0VUI";
-		String chat_id = "1725280220";
+		
+		String Token = properties.get("token");
+		String chat_id = properties.get("chatId");
 		
 		BufferedReader in = null;
 		
