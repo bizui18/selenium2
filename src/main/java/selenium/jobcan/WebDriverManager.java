@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import selenium.enums.OS;
+
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -22,22 +25,38 @@ public class WebDriverManager {
     private String jsonUrl;
     private String defaultChromeDriverDir;
     private String chromeDriverPath;
-    
+    private OS os;
     // 초기화...
     public WebDriverManager(){
+        os = OS.get();
         jsonUrl = "https://github.com/GoogleChromeLabs/chrome-for-testing/blob/main/data/latest-versions-per-milestone-with-downloads.json";
-        defaultChromeDriverDir = String.format("d:/chromeDriver/%s/", ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddhhmmss")));
+        defaultChromeDriverDir = String.format("%s%s",os.getDir(), "/"+ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddhhmmss")));
     }
 
     private String getChromeVersion(){
+        String version = "";
+        if(os.equals(OS.Window)){
 
-        String chromePath =System.getProperty("chrome.path");
-        if(chromePath == null){
-            setChromePath();
-            chromePath = System.getProperty("chrome.path");
+            String chromePath =System.getProperty("chrome.path");
+            if(chromePath == null){
+                setChromePath();
+                chromePath = System.getProperty("chrome.path");
+            }
+            File file = new File(chromePath);
+            version = file.listFiles(pathname -> pathname.isDirectory() && !"".equals(pathname.getName().replaceAll("[^1-9]","")))[0].getName();
+        }else if(os.equals(OS.Linux)){
+            try {
+                Process p = Runtime.getRuntime().exec("chrome --version");
+                byte[] bytes = p.getInputStream().readAllBytes();
+                if(bytes == null){
+                    bytes = new byte[0];
+                }
+                version = new String(bytes).replaceAll("[^1-9]","");
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
-        File file = new File(chromePath);
-        String version = file.listFiles(pathname -> pathname.isDirectory() && !"".equals(pathname.getName().replaceAll("[^1-9]","")))[0].getName();
 
         return version;
     }
@@ -45,7 +64,7 @@ public class WebDriverManager {
     private Map<String,String> getDownloadUrl() throws IOException{
         Map<String,String> map = new HashMap<>();
 
-        String dir = "d:/";
+        String dir = os.getDir();
         String fileName = MyUtils.fileDownload(jsonUrl, dir);
         
         File file = new File(dir,fileName);
@@ -59,7 +78,8 @@ public class WebDriverManager {
 
         // enum으로 수정해야 한다.
 
-        String suffix = "chromedriver-win64";
+        // String suffix = "chromedriver-win64";
+        String suffix = os.getSuffix();
         String regex = String.format("\\bhttps://[\\w.-]+(?:\\.[\\w.-]+)+(?:/[^\\s]*)?%s\\.zip\\b", suffix);
 
         Pattern pattern = Pattern.compile(regex);
@@ -83,16 +103,22 @@ public class WebDriverManager {
         Map<String,String> urlMap = getDownloadUrl();
         String version = getChromeVersion().substring(0, 3);
 
-        String path = MyUtils.fileDownload(urlMap.get(version), dir);
-        System.out.println("chrome driver save path ==>\t"+dir + path);
+        String zipFile = MyUtils.fileDownload(urlMap.get(version), dir);
+        System.out.printf("chrome driver save dir ==>\t%s %s\n",dir,"/"+zipFile);
         
-        new File(path).mkdirs();
+        new File(dir).mkdirs();
 
-        MyUtils.unCompressZip(dir,path);
-        Files.deleteIfExists(Path.of(dir,path));
+        MyUtils.unCompressZip(dir,zipFile);
+        Files.deleteIfExists(Path.of(dir,zipFile));
         mvFromDir(dir);
-        System.setProperty("webdriver.chrome.driver",String.format("%s%s", dir,"/chromedriver.exe"));
         
+        setChromeDriver(String.format("%s%s", dir,"/"+os.getExe()));
+    }
+    public void setChromeDriver(){
+        System.setProperty("webdriver.chrome.driver",String.format("%s%s", this.chromeDriverPath,"/"+os.getExe()));
+    }
+    public void setChromeDriver(String path){
+        System.setProperty("webdriver.chrome.driver",path);
     }
     public void deleteRecursive(File root) throws IOException{
         for (File file : root.listFiles(t-> t.isFile())) {
@@ -153,12 +179,14 @@ public class WebDriverManager {
         
     }
 
+    // 윈도우에서 크롬 버전을 확인하기 위해서 사용한다.
+    // 이때 확인된 크롬 버전으로 driver를 다운 받는다.
     public void setChromePath(){
-      System.setProperty("chrome.path", "C:\\Program Files\\Google\\Chrome\\Application");
-   }
+        System.setProperty("chrome.path", "C:\\Program Files\\Google\\Chrome\\Application");
+    }
 
-   public void setChromePath(String path){
-      System.setProperty("chrome.path", path);
-   }
+    public void setChromePath(String path){
+        System.setProperty("chrome.path", path);
+    }
     
 }
