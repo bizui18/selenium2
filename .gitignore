@@ -2,3 +2,4 @@
 /target/classes
 *.prefs
 *.class
+*.jar
