@@ -19,10 +19,13 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.github.bonigarcia.wdm.WebDriverManager;
 import selenium.enums.MyProperties;
 
 public class Jobcan {
@@ -43,41 +46,45 @@ public class Jobcan {
 	public static void main(String[] args) throws Exception {
 
 		// 1. properties loading and check date
-		// String properiesPath = "d:/jobcan.properties";
-		String properiesPath = args[0];
-		
+		String propertiesPath = "d:/jobcan.properties";
+		// String propertiesPath = args[0];
+		System.out.println("!");
         ZonedDateTime now = ZonedDateTime.now();
         System.out.println("=================================================================");
         System.out.println(now.getDayOfWeek().toString() + "\tJob Started!!!\n\n" + "\t\t"+ now.toString());
         
-        Map<String, String> map = MyUtils.loadProperties(properiesPath);
-
-        String[] holidays = MyProperties.HOLIDAY.getValue(map).replaceAll(" ", "").split(","); // 공백 제거 후 쪼갬
+        Map<String, String> map = MyUtils.loadProperties(propertiesPath);
+		
 		boolean show = MyProperties.SHOW.getBooleanValue(map);
 		boolean sleepYN = MyProperties.SLEEP.getBooleanValue(map);
-        String today = now.format(DateTimeFormatter.ofPattern("MMdd"));
-		int dayOfWeek = now.getDayOfWeek().getValue();
+        
+		boolean go = checkListBeforeStart(now, map);
+		if(!go) return;
 		
-		// check day of week which is Saturday or Sunday
-		if(dayOfWeek == DayOfWeek.SATURDAY.getValue() || dayOfWeek == DayOfWeek.SUNDAY.getValue()){
-			System.out.println("\t\t\t[It is " + DayOfWeek.of(dayOfWeek).toString()+"]");
-			return;
+		WebDriver driver = null;
+		if(map.getOrDefault("os","chrome").equals("chrome")){
+			System.out.println("chrome");
+			System.setProperty("webdriver.chrome.driver", map.get("driver"));
+			driver = MyUtils.getChromeDriver(show);
+		}else{
+			System.out.println("firefox");
+			FirefoxOptions options = new FirefoxOptions();
+			options.setCapability("acceptInsecureCerts", true);
+			options.addArguments("--start-maximized");
+			
+			// options.addArguments("enable-automation"); // https://stackoverflow.com/a/43840128/1689770
+			// options.addArguments("--headless"); // only if you are ACTUALLY running headless
+			// options.addArguments("--no-sandbox"); //https://stackoverflow.com/a/50725918/1689770
+			// options.addArguments("--disable-dev-shm-usage"); //https://stackoverflow.com/a/50725918/1689770
+			// options.addArguments("--disable-browser-side-navigation"); //https://stackoverflow.com/a/49123152/1689770
+			// options.addArguments("--disable-gpu"); //https://stackoverflow.com/questions/51959986/how-to-solve-selenium-chromedriver-timed-out-receiving-message-from-renderer-exc
+			
+			// WebDriverManager.firefoxdriver().arch64().setup();
+			driver = WebDriverManager.firefoxdriver().capabilities(options).create();
+			
+			// driver = new FirefoxDriver(options);
 		}
-		// check holiday which written in properties file.
-		for (String holiday : holidays) {
-			if(today.equals(holiday)){
-				System.out.println("\t\t\t[It is happy holiday!!!]");
-				return;
-			}
-		}
-		// WebDriverManager.chromiumdriver().setup();
-		// WebDriverManager.chromiumdriver().arm64().setup();
-		// WebDriver wd = WebDriverManager.chromiumdriver().create();
-		// System.setProperty("webdriver.chrome.driver", map.get("driver"));
-
-		System.setProperty("webdriver.chrome.driver", map.get("driver"));
-
-		Jobcan jobcan = new Jobcan(MyUtils.getWebDriver(show),map);
+		Jobcan jobcan = new Jobcan(driver,map);
 		
 		//3. random timer		
 		if(sleepYN){
@@ -90,6 +97,26 @@ public class Jobcan {
 		//4. web page works
 		jobcan.excute();
 		System.out.println("=================================================================\n");
+	}
+
+	private static boolean checkListBeforeStart(ZonedDateTime now, Map<String, String> map) {
+		String[] holidays = MyProperties.HOLIDAY.getValue(map).replaceAll(" ", "").split(","); // 공백 제거 후 쪼갬
+        String today = now.format(DateTimeFormatter.ofPattern("MMdd"));
+		int dayOfWeek = now.getDayOfWeek().getValue();
+		
+		// check day of week which is Saturday or Sunday
+		if(dayOfWeek == DayOfWeek.SATURDAY.getValue() || dayOfWeek == DayOfWeek.SUNDAY.getValue()){
+			System.out.println("\t\t\t[It is " + DayOfWeek.of(dayOfWeek).toString()+"]");
+			return false;
+		}
+		// check holiday which written in properties file.
+		for (String holiday : holidays) {
+			if(today.equals(holiday)){
+				System.out.println("\t\t\t[It is happy holiday!!!]");
+				return false;
+			}
+		}
+		return true;
 	}
 	public List<String> openWindows(){
 		WebElement sslButton = driver.findElement(By.cssSelector("#jbc-app-links > ul > li:nth-child(3) > a"));

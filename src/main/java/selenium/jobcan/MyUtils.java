@@ -9,6 +9,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,17 +23,13 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import java.net.HttpURLConnection;
-import java.net.URL;
-
 import javax.imageio.ImageIO;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.manager.SeleniumManager;
-
-import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 
 public class MyUtils {
    
@@ -59,8 +57,7 @@ public class MyUtils {
 
       return new ChromeDriver(options);
    }
-   public static WebDriver getWebDriver(boolean show){ // true 
-      
+   public static WebDriver getChromeDriver(boolean show){ // true 
       ChromeOptions options = new ChromeOptions();
       options.setCapability("acceptInsecureCerts", true);
       options.addArguments("--start-maximized");
@@ -77,6 +74,30 @@ public class MyUtils {
       ChromeDriver driver = null;
       try {
          driver = new ChromeDriver(options);
+      } catch (Exception e) {
+         // TODO: handle exception
+         System.out.println(e.getMessage());
+      }
+      return driver;
+   }
+   public static WebDriver getFirefoxDriver(boolean show){ // true 
+      FirefoxOptions options = new FirefoxOptions();
+      
+      options.setCapability("acceptInsecureCerts", true);
+      options.addArguments("--start-maximized");
+      
+      if(!show){
+         options.addArguments("enable-automation"); // https://stackoverflow.com/a/43840128/1689770
+         options.addArguments("--headless"); // only if you are ACTUALLY running headless
+         options.addArguments("--no-sandbox"); //https://stackoverflow.com/a/50725918/1689770
+         options.addArguments("--disable-dev-shm-usage"); //https://stackoverflow.com/a/50725918/1689770
+         options.addArguments("--disable-browser-side-navigation"); //https://stackoverflow.com/a/49123152/1689770
+         options.addArguments("--disable-gpu"); //https://stackoverflow.com/questions/51959986/how-to-solve-selenium-chromedriver-timed-out-receiving-message-from-renderer-exc
+      }
+      
+      FirefoxDriver driver = null;
+      try {
+         driver = new FirefoxDriver(options);
       } catch (Exception e) {
          // TODO: handle exception
          System.out.println(e.getMessage());
