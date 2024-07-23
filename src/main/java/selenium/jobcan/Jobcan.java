@@ -114,9 +114,6 @@ public class Jobcan {
 				return false;
 			}
 		}
-		if(true){
-			return false;
-		}
 		return true;
 	}
 	public List<String> openWindows(){
