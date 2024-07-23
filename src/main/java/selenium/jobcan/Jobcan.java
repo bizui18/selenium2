@@ -46,8 +46,8 @@ public class Jobcan {
 	public static void main(String[] args) throws Exception {
 
 		// 1. properties loading and check date
-		String propertiesPath = "d:/jobcan.properties";
-		// String propertiesPath = args[0];
+		// String propertiesPath = "d:/jobcan.properties";
+		String propertiesPath = args[0];		
 		System.out.println("!");
         ZonedDateTime now = ZonedDateTime.now();
         System.out.println("=================================================================");
@@ -70,14 +70,13 @@ public class Jobcan {
 			System.out.println("firefox");
 			FirefoxOptions options = new FirefoxOptions();
 			options.setCapability("acceptInsecureCerts", true);
-			options.addArguments("--start-maximized");
 			
-			// options.addArguments("enable-automation"); // https://stackoverflow.com/a/43840128/1689770
-			// options.addArguments("--headless"); // only if you are ACTUALLY running headless
-			// options.addArguments("--no-sandbox"); //https://stackoverflow.com/a/50725918/1689770
-			// options.addArguments("--disable-dev-shm-usage"); //https://stackoverflow.com/a/50725918/1689770
-			// options.addArguments("--disable-browser-side-navigation"); //https://stackoverflow.com/a/49123152/1689770
-			// options.addArguments("--disable-gpu"); //https://stackoverflow.com/questions/51959986/how-to-solve-selenium-chromedriver-timed-out-receiving-message-from-renderer-exc
+			options.addArguments("enable-automation"); // https://stackoverflow.com/a/43840128/1689770
+			options.addArguments("--headless"); // only if you are ACTUALLY running headless
+			options.addArguments("--no-sandbox"); //https://stackoverflow.com/a/50725918/1689770
+			options.addArguments("--disable-dev-shm-usage"); //https://stackoverflow.com/a/50725918/1689770
+			options.addArguments("--disable-browser-side-navigation"); //https://stackoverflow.com/a/49123152/1689770
+			options.addArguments("--disable-gpu"); //https://stackoverflow.com/questions/51959986/how-to-solve-selenium-chromedriver-timed-out-receiving-message-from-renderer-exc
 			
 			// WebDriverManager.firefoxdriver().arch64().setup();
 			driver = WebDriverManager.firefoxdriver().capabilities(options).create();
@@ -85,7 +84,6 @@ public class Jobcan {
 			// driver = new FirefoxDriver(options);
 		}
 		Jobcan jobcan = new Jobcan(driver,map);
-		
 		//3. random timer		
 		if(sleepYN){
 			Random random = new Random();
@@ -111,10 +109,13 @@ public class Jobcan {
 		}
 		// check holiday which written in properties file.
 		for (String holiday : holidays) {
-			if(today.equals(holiday)){
+			if(today.startsWith(holiday)){ // start with로 바꾸는것 테스트해봐야제
 				System.out.println("\t\t\t[It is happy holiday!!!]");
 				return false;
 			}
+		}
+		if(true){
+			return false;
 		}
 		return true;
 	}
@@ -125,6 +126,7 @@ public class Jobcan {
 		for (String wind : driver.getWindowHandles()) {
 			if(driver.getWindowHandle().equals(wind))continue;
 			driver.switchTo().window(wind);
+			MyUtils.sleep(5000);
 			js.executeScript("window.open('/employee/attendance')");
 			// js.executeScript("window.open('/employee/adit/modify')");
 			MyUtils.sleep(3000);
@@ -244,9 +246,12 @@ public class Jobcan {
 		login(driver);
 		
 		// 사용자 사번 U00000
-		WebElement workerNumber = driver.findElement(By.cssSelector("body > div.wrapper > div > section.content > div > div > div:nth-child(1) > div.box-body > table > tbody > tr:nth-child(3) >td"));
-		
-		String id = workerNumber.getText();
+		// WebElement workerNumber = driver.findElement(By.cssSelector("body > div.wrapper > div > section.content > div > div > div:nth-child(1) > div.box-body > table > tbody > tr:nth-child(3) >td"));
+		WebElement workerNumber = MyWaiter.wait(driver, By.cssSelector("body > div.wrapper > div > section.content > div > div > div:nth-child(1) > div.box-body > table > tbody > tr:nth-child(3) >td"), 3);
+		String id = "## getting ID failed  ##";
+		if(workerNumber != null){
+			workerNumber.getText();
+		}
 		System.out.println("uracle id => "+ id);
 		
 		// 0 main, 1 employee, 2 attendance

@@ -6,7 +6,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 public class MyWaiter {
-    public static boolean wait(WebDriver driver,By by,int trial){
+    public static WebElement wait(WebDriver driver,By by,int trial){
         if(trial < 3){
             trial = 3;
         }
@@ -17,14 +17,14 @@ public class MyWaiter {
                 if(el == null){
                     el = driver.findElement(by);
                 }else{
-                    return true;
+                    return el;
                 }
             } catch (NoSuchElementException e) {
                 // TODO: handle exception
                 System.out.printf("waiting element is created, [%s / %s]\n",i+1,trial);
             }
-            MyUtils.sleep(2000);
+            MyUtils.sleep(3000);
         }
-        return el != null;
+        return null;
     }
 }
