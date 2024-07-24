@@ -19,7 +19,6 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -70,13 +69,15 @@ public class Jobcan {
 			System.out.println("firefox");
 			FirefoxOptions options = new FirefoxOptions();
 			options.setCapability("acceptInsecureCerts", true);
-			
-			options.addArguments("enable-automation"); // https://stackoverflow.com/a/43840128/1689770
-			options.addArguments("--headless"); // only if you are ACTUALLY running headless
-			options.addArguments("--no-sandbox"); //https://stackoverflow.com/a/50725918/1689770
-			options.addArguments("--disable-dev-shm-usage"); //https://stackoverflow.com/a/50725918/1689770
-			options.addArguments("--disable-browser-side-navigation"); //https://stackoverflow.com/a/49123152/1689770
-			options.addArguments("--disable-gpu"); //https://stackoverflow.com/questions/51959986/how-to-solve-selenium-chromedriver-timed-out-receiving-message-from-renderer-exc
+
+			if (!show) {
+				options.addArguments("enable-automation"); // https://stackoverflow.com/a/43840128/1689770
+				options.addArguments("--headless"); // only if you are ACTUALLY running headless
+				options.addArguments("--no-sandbox"); // https://stackoverflow.com/a/50725918/1689770
+				options.addArguments("--disable-dev-shm-usage"); // https://stackoverflow.com/a/50725918/1689770
+				options.addArguments("--disable-browser-side-navigation"); // https://stackoverflow.com/a/49123152/1689770
+				options.addArguments("--disable-gpu"); // https://stackoverflow.com/questions/51959986/how-to-solve-selenium-chromedriver-timed-out-receiving-message-from-renderer-exc
+			}
 			
 			// WebDriverManager.firefoxdriver().arch64().setup();
 			driver = WebDriverManager.firefoxdriver().capabilities(options).create();
@@ -247,7 +248,7 @@ public class Jobcan {
 		WebElement workerNumber = MyWaiter.wait(driver, By.cssSelector("body > div.wrapper > div > section.content > div > div > div:nth-child(1) > div.box-body > table > tbody > tr:nth-child(3) >td"), 3);
 		String id = "## getting ID failed  ##";
 		if(workerNumber != null){
-			workerNumber.getText();
+			id = workerNumber.getText();
 		}
 		System.out.println("uracle id => "+ id);
 		

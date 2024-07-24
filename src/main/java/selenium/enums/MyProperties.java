@@ -11,6 +11,9 @@ public enum MyProperties {
     URL("url"),
     CLICK("click"),
     SLEEP("sleep"),
+    TOKEN("token"),
+    CHATID("chatId"),
+    OS("os");
     ;
 
     private String key;
