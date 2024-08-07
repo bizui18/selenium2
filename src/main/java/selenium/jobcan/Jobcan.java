@@ -19,6 +19,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -62,13 +63,31 @@ public class Jobcan {
 			System.setProperty("webdriver.chrome.driver", map.get("driver"));
 			
 			driver = MyUtils.getChromeDriver(show);
-		}else{
+		}else if(map.getOrDefault("os","chrome").equals("firefox")){
 			System.out.println("firefox");
 			System.setProperty("webdriver.gecko.driver",map.get("fox"));  
 			
 			driver = MyUtils.getFirefoxDriver(show);
+		}else {
+			System.out.println("webdriver manager -> firefox");
+			FirefoxOptions options = new FirefoxOptions();
+      
+			options.setCapability("acceptInsecureCerts", true);
+			options.addArguments("--start-maximized");
+			if(!show){
+				options.addArguments("enable-automation"); // https://stackoverflow.com/a/43840128/1689770
+				options.addArguments("--headless"); // only if you are ACTUALLY running headless
+				options.addArguments("--no-sandbox"); //https://stackoverflow.com/a/50725918/1689770
+				options.addArguments("--disable-dev-shm-usage"); //https://stackoverflow.com/a/50725918/1689770
+				options.addArguments("--disable-browser-side-navigation"); //https://stackoverflow.com/a/49123152/1689770
+				options.addArguments("--disable-gpu"); //https://stackoverflow.com/questions/51959986/how-to-solve-selenium-chromedriver-timed-out-receiving-message-from-renderer-exc
+			}
+
+			driver = io.github.bonigarcia.wdm.WebDriverManager.firefoxdriver().capabilities(options).create();
+			
+
 		}
-		
+
 		Jobcan jobcan = new Jobcan(driver,map);
 		//3. random timer		
 		if(sleepYN){
