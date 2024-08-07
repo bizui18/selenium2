@@ -8,3 +8,4 @@ target/classes/selenium/jobcan/*.class
 .project
 .vscode/settings.json
 /target
+.factorypath
