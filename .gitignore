@@ -7,3 +7,4 @@ target/classes/selenium/jobcan/*.class
 .classpath
 .project
 .vscode/settings.json
+/target
