@@ -19,12 +19,10 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
 import selenium.enums.MyProperties;
 
 public class Jobcan {
@@ -33,7 +31,6 @@ public class Jobcan {
 	JavascriptExecutor js;
 	WebDriverWait waiter;
 
-	String chromePath;
 	Map<String,String> properties;
 	public Jobcan(WebDriver webDriver,Map<String,String> properties) throws Exception {
 		this.driver = webDriver;
@@ -45,8 +42,7 @@ public class Jobcan {
 	public static void main(String[] args) throws Exception {
 
 		// 1. properties loading and check date
-		// String propertiesPath = "d:/jobcan.properties";
-		String propertiesPath = args[0];		
+		String propertiesPath = args[0];
 		System.out.println("!");
         ZonedDateTime now = ZonedDateTime.now();
         System.out.println("=================================================================");
@@ -64,26 +60,15 @@ public class Jobcan {
 		if(map.getOrDefault("os","chrome").equals("chrome")){
 			System.out.println("chrome");
 			System.setProperty("webdriver.chrome.driver", map.get("driver"));
+			
 			driver = MyUtils.getChromeDriver(show);
 		}else{
 			System.out.println("firefox");
-			FirefoxOptions options = new FirefoxOptions();
-			options.setCapability("acceptInsecureCerts", true);
-
-			if (!show) {
-				options.addArguments("enable-automation"); // https://stackoverflow.com/a/43840128/1689770
-				options.addArguments("--headless"); // only if you are ACTUALLY running headless
-				options.addArguments("--no-sandbox"); // https://stackoverflow.com/a/50725918/1689770
-				options.addArguments("--disable-dev-shm-usage"); // https://stackoverflow.com/a/50725918/1689770
-				options.addArguments("--disable-browser-side-navigation"); // https://stackoverflow.com/a/49123152/1689770
-				options.addArguments("--disable-gpu"); // https://stackoverflow.com/questions/51959986/how-to-solve-selenium-chromedriver-timed-out-receiving-message-from-renderer-exc
-			}
+			System.setProperty("webdriver.gecko.driver",map.get("fox"));  
 			
-			// WebDriverManager.firefoxdriver().arch64().setup();
-			driver = WebDriverManager.firefoxdriver().capabilities(options).create();
-			
-			// driver = new FirefoxDriver(options);
+			driver = MyUtils.getFirefoxDriver(show);
 		}
+		
 		Jobcan jobcan = new Jobcan(driver,map);
 		//3. random timer		
 		if(sleepYN){
