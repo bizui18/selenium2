@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,9 +18,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import selenium.enums.OS;
-
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 
 // only for chrome...
 public class WebDriverManager {
@@ -182,7 +181,7 @@ public class WebDriverManager {
     // 윈도우에서 크롬 버전을 확인하기 위해서 사용한다.
     // 이때 확인된 크롬 버전으로 driver를 다운 받는다.
     public void setChromePath(){
-        System.setProperty("chrome.path", "C:\\Program Files\\Google\\Chrome\\Application");
+        System.setProperty("chrome.path", "C:/Program Files/Google/Chrome/Application");
     }
 
     public void setChromePath(String path){

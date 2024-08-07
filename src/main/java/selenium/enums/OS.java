@@ -1,8 +1,5 @@
 package selenium.enums;
 
-import lombok.Getter;
-
-@Getter
 public enum OS {
     Linux("linux","/root/chromeDriver","chromedriver","chromedriver-linux64"),
     Window("windows","d:/chromeDriver","chromedriver.exe","chromedriver-win64"),
@@ -32,6 +29,22 @@ public enum OS {
         }
 
         return OS.Linux;
+    }
+
+    public String getOsName() {
+        return osName;
+    }
+
+    public String getDir() {
+        return dir;
+    }
+
+    public String getExe() {
+        return exe;
+    }
+
+    public String getSuffix() {
+        return suffix;
     }
     
 }
