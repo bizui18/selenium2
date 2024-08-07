@@ -19,6 +19,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -58,34 +59,50 @@ public class Jobcan {
 		if(!go) return;
 		
 		WebDriver driver = null;
-		if(map.getOrDefault("os","chrome").equals("chrome")){
-			System.out.println("chrome");
-			System.setProperty("webdriver.chrome.driver", map.get("driver"));
-			
-			driver = MyUtils.getChromeDriver(show);
-		}else if(map.getOrDefault("os","chrome").equals("firefox")){
-			System.out.println("firefox");
-			System.setProperty("webdriver.gecko.driver",map.get("fox"));  
-			
-			driver = MyUtils.getFirefoxDriver(show);
-		}else {
-			System.out.println("webdriver manager -> firefox");
-			FirefoxOptions options = new FirefoxOptions();
-      
-			options.setCapability("acceptInsecureCerts", true);
-			options.addArguments("--start-maximized");
-			if(!show){
-				options.addArguments("enable-automation"); // https://stackoverflow.com/a/43840128/1689770
-				options.addArguments("--headless"); // only if you are ACTUALLY running headless
-				options.addArguments("--no-sandbox"); //https://stackoverflow.com/a/50725918/1689770
-				options.addArguments("--disable-dev-shm-usage"); //https://stackoverflow.com/a/50725918/1689770
-				options.addArguments("--disable-browser-side-navigation"); //https://stackoverflow.com/a/49123152/1689770
-				options.addArguments("--disable-gpu"); //https://stackoverflow.com/questions/51959986/how-to-solve-selenium-chromedriver-timed-out-receiving-message-from-renderer-exc
-			}
-
-			driver = io.github.bonigarcia.wdm.WebDriverManager.firefoxdriver().capabilities(options).create();
-			
-
+		switch (map.getOrDefault("os","chrome")) {
+			case "chrome":
+				System.out.println("chrome");
+				System.setProperty("webdriver.chrome.driver", map.get("driver"));
+				driver = MyUtils.getChromeDriver(show);
+				break;
+			case "firefox":
+				System.out.println("firefox");
+				System.setProperty("webdriver.gecko.driver",map.get("geckodriver"));
+				driver = MyUtils.getFirefoxDriver(show);
+				break;
+			case "webdriver_chrome":{
+					// webdrivermanager는 chrome버전 114까지만 가능.
+					System.out.println("webdriver manager -> chrome");
+					ChromeOptions options = new ChromeOptions();
+					options.setCapability("acceptInsecureCerts", true);
+					options.addArguments("--start-maximized");
+					if(!show){
+						options.addArguments("enable-automation"); // https://stackoverflow.com/a/43840128/1689770
+						options.addArguments("--headless"); // only if you are ACTUALLY running headless
+						options.addArguments("--no-sandbox"); //https://stackoverflow.com/a/50725918/1689770
+						options.addArguments("--disable-dev-shm-usage"); //https://stackoverflow.com/a/50725918/1689770
+						options.addArguments("--disable-browser-side-navigation"); //https://stackoverflow.com/a/49123152/1689770
+						options.addArguments("--disable-gpu"); //https://stackoverflow.com/questions/51959986/how-to-solve-selenium-chromedriver-timed-out-receiving-message-from-renderer-exc
+					}
+					driver = io.github.bonigarcia.wdm.WebDriverManager.chromedriver().capabilities(options).create();
+					break;
+				}
+			default:{
+					System.out.println("webdriver manager -> firefox");
+					FirefoxOptions options = new FirefoxOptions();
+					options.setCapability("acceptInsecureCerts", true);
+					options.addArguments("--start-maximized");
+					if(!show){
+						options.addArguments("enable-automation"); // https://stackoverflow.com/a/43840128/1689770
+						options.addArguments("--headless"); // only if you are ACTUALLY running headless
+						options.addArguments("--no-sandbox"); //https://stackoverflow.com/a/50725918/1689770
+						options.addArguments("--disable-dev-shm-usage"); //https://stackoverflow.com/a/50725918/1689770
+						options.addArguments("--disable-browser-side-navigation"); //https://stackoverflow.com/a/49123152/1689770
+						options.addArguments("--disable-gpu"); //https://stackoverflow.com/questions/51959986/how-to-solve-selenium-chromedriver-timed-out-receiving-message-from-renderer-exc
+					}
+					driver = io.github.bonigarcia.wdm.WebDriverManager.firefoxdriver().capabilities(options).create();
+					break;
+				}
 		}
 
 		Jobcan jobcan = new Jobcan(driver,map);
