@@ -3,3 +3,7 @@ target/classes/selenium/jobcan/*.class
 *.prefs
 *.class
 *.jar
+.vscode/launch.json
+.classpath
+.project
+.vscode/settings.json
