@@ -13,6 +13,7 @@ public enum MyProperties {
     SLEEP("sleep"),
     TOKEN("token"),
     CHATID("chatId"),
+    FORCE("force"),
     OS("os");
     ;
 
